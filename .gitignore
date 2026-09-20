@@ -1,0 +1,36 @@
+# IDE
+.idea/
+.run/
+.vscode/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Caches and reports
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Runtime data
+staticfiles/
+media/
+logs/
+*.log
+*.sqlite3
+
+# Archives
+*.zip
+*.bundle
+
+# OS
+.DS_Store
