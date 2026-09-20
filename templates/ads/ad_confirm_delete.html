@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Удалить объявление — маркет.код{% endblock %}
+{% block content %}<section class="auth-card"><p class="eyebrow">Удаление объявления</p><h1>Удалить «{{ ad.title }}»?</h1><p class="page-intro">Объявление и все отзывы к нему будут удалены. Восстановить их не получится.</p><form method="post">{% csrf_token %}<div class="actions"><button class="button button-danger" type="submit">Удалить объявление</button><a class="button button-secondary" href="{% url 'web:ad-detail' ad.pk %}">Отмена</a></div></form></section>{% endblock %}

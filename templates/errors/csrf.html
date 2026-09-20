@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Повторите отправку формы — маркет.код{% endblock %}
+{% block content %}
+<section class="error-page">
+  <h1>Не удалось отправить форму</h1>
+  <p>Откройте форму заново и повторите попытку.</p>
+  <a class="button" href="{{ retry_url }}">Открыть форму заново</a>
+  <p><a href="{% url 'web:ad-list' %}">Вернуться к объявлениям</a></p>
+</section>
+{% endblock %}

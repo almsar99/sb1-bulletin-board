@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Доступ ограничен — маркет.код{% endblock %}
+{% block content %}<section class="error-page"><p class="error-code">403</p><h1>Доступ ограничен.</h1><p>Изменять и удалять запись может только её автор или администратор.</p><a class="button" href="{% url 'web:ad-list' %}">К объявлениям</a></section>{% endblock %}

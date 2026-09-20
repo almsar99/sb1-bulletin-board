@@ -31,7 +31,13 @@ urlpatterns = [
         APIDocumentationView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
+    path("", include("messaging.urls")),
+    path("", include("web.urls")),
 ]
+
+handler403 = "web.views.permission_denied_view"
+handler404 = "web.views.page_not_found_view"
+handler500 = "web.views.server_error_view"
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

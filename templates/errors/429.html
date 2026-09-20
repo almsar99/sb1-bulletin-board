@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Подождите немного — маркет.код{% endblock %}
+{% block content %}
+<section class="error-page">
+  <p class="error-code">429</p>
+  <h1>Подождите немного.</h1>
+  <p>Слишком много запросов. Повторите попытку через {{ retry_after }} сек.</p>
+  <a class="button" href="{{ retry_url }}">Вернуться к форме</a>
+</section>
+{% endblock %}

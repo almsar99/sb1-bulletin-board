@@ -1,0 +1,6 @@
+<article class="ad-card">
+  <a class="card-image-link" href="{% url 'web:ad-detail' ad.pk %}" tabindex="-1" aria-hidden="true">
+    {% if ad.image %}<img src="{{ ad.image.url }}" alt="" loading="lazy" width="400" height="300">{% else %}<div class="image-placeholder">{% if ad.category in category_values %}{% include 'includes/category_icon.html' with icon=ad.category %}{% else %}{% include 'includes/brand_mark.html' %}{% endif %}<span>Нет фото</span></div>{% endif %}
+  </a>
+  <div class="card-body"><a class="category-badge" href="{% url 'web:category' ad.category %}">{{ ad.get_category_display }}</a>{% if request.user == ad.author or request.user.is_admin %}<span class="ad-status">{{ ad.get_status_display }}</span>{% if ad.status == 'draft' %}<span class="muted">Отправлено на рассмотрение {{ ad.submitted_at|date:'d.m.Y' }}</span>{% endif %}{% endif %}<p class="card-price">{% if ad.price %}{{ ad.price|floatformat:'0g' }} ₽{% else %}Бесплатно{% endif %}</p><h3><a href="{% url 'web:ad-detail' ad.pk %}">{{ ad.title }}</a></h3><p class="card-description">{{ ad.description|truncatechars:85 }}</p><div class="card-meta"><span>{{ ad.author.first_name|default:'Пользователь' }}</span><time datetime="{{ ad.created_at|date:'c' }}">{{ ad.created_at|date:'d.m.Y' }}</time></div></div>
+</article>

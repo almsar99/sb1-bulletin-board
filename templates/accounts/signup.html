@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация — маркет.код{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    <p class="eyebrow">Давайте знакомиться</p>
+    <h1>Создайте аккаунт.</h1>
+    <p class="page-intro">Заполните форму — мы отправим письмо. Аккаунт будет создан после подтверждения почты.</p>
+    <form method="post" data-email-form>
+        {% csrf_token %}
+        <p class="form-legend">* Обязательные поля</p>
+        {% include 'includes/form_fields.html' %}
+        <button class="button button-full" type="submit">Получить письмо</button>
+    </form>
+    <p class="auth-bottom">Уже зарегистрированы? <a href="{% url 'web:login' %}">Войти</a></p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'js/email-cooldown.js' %}" defer></script>{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}О проекте — маркет.код{% endblock %}
+{% block content %}
+<article class="about-page">
+  <section aria-labelledby="about-intro">
+    <h1 id="about-intro">О проекте</h1>
+    <p class="about-lead">маркет.код — доска объявлений на сайте <a href="{{ site_url }}">market-kod.ru</a></p>
+    <p>Здесь можно разместить предложение или найти подходящее решение.</p>
+  </section>
+  <section aria-labelledby="about-categories">
+    <h2 id="about-categories">Рубрики</h2>
+    {% include 'includes/categories.html' %}
+  </section>
+  <section aria-labelledby="about-how">
+    <h2 id="about-how">Как это работает</h2>
+    <dl class="about-steps">
+      <div><dt>Размещение</dt><dd>Создайте объявление в личном кабинете и добавьте фотографию, если хотите показать предложение.</dd></div>
+      <div><dt>Подтверждение</dt><dd>Объявление и каждое изменение появляются в ленте после подтверждения администратором. Свои карточки видны в кабинете с пометкой «На рассмотрении».</dd></div>
+      <div><dt>Обсуждение</dt><dd>Оставляйте отзывы, задавайте вопросы к объявлениям и отвечайте на них.</dd></div>
+      <div><dt>Поиск</dt><dd>Ищите объявления по названию и выбирайте рубрику. Отбор по рубрике и цене также доступен через API.</dd></div>
+    </dl>
+  </section>
+  <section aria-labelledby="about-tech">
+    <h2 id="about-tech">Технологии</h2>
+    <p>Это дипломный проект.</p>
+    <p class="muted about-tech">Django, Django REST Framework, токены доступа (JWT), PostgreSQL, контейнеры.</p>
+  </section>
+</article>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% if not request.user.is_authenticated %}
+<p><a href="{% url 'web:login' %}?next={{ request.path|urlencode }}">Войдите, чтобы написать автору</a></p>
+{% elif request.user.pk != ad.author_id %}
+{% if private_thread %}<p><a class="button button-secondary" href="{% url 'messaging:detail' private_thread.pk %}">Перейти к переписке</a></p>{% endif %}
+{% if ad.status == 'published' and not private_thread or private_message_form.is_bound %}
+<form class="private-message-form" method="post" action="{% url 'messaging:start' ad.pk %}">{% csrf_token %}
+{{ private_message_form.as_p }}<button class="button" type="submit">Написать автору</button>
+</form>
+{% endif %}
+{% endif %}

@@ -1,0 +1,7 @@
+{% if page_obj.has_other_pages %}
+<nav class="pagination" aria-label="Постраничная навигация">
+  {% if page_obj.has_previous %}<a class="button button-secondary" href="{% querystring page=page_obj.previous_page_number %}">← Назад</a>{% else %}<span></span>{% endif %}
+  <span class="page-status" aria-current="page">{{ page_obj.number }} <span>из {{ page_obj.paginator.num_pages }}</span></span>
+  {% if page_obj.has_next %}<a class="button button-secondary" href="{% querystring page=page_obj.next_page_number %}">Далее →</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Мой кабинет — маркет.код{% endblock %}
+{% block search_action %}{% url 'web:account' %}{% endblock %}
+{% block search_filters %}{% if active_status %}<input type="hidden" name="status" value="{{ active_status }}">{% endif %}{% endblock %}
+{% block content %}<div class="account-heading"><div><p class="eyebrow">Мой кабинет</p><h1>Здравствуйте{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %}.</h1><p class="muted">{{ request.user.email }}</p></div><a class="button" href="{% url 'web:ad-create' %}">+ Новое объявление</a></div><div class="section-heading"><h2>Мои объявления <span class="count-badge">{{ page_obj.paginator.count }}</span></h2></div><nav class="category-nav" aria-label="Состояние объявлений">
+<a href="{% querystring status=None page=None %}" {% if not active_status %}aria-current="page"{% endif %}>Все</a>
+<a href="{% querystring status='draft' page=None %}" {% if active_status == 'draft' %}aria-current="page"{% endif %}>На рассмотрении</a>
+<a href="{% querystring status='published' page=None %}" {% if active_status == 'published' %}aria-current="page"{% endif %}>Опубликовано</a>
+<a href="{% querystring status='archived' page=None %}" {% if active_status == 'archived' %}aria-current="page"{% endif %}>Снято с публикации</a>
+</nav>
+{% if ads %}<div class="ad-grid">{% for ad in ads %}{% include 'includes/ad_card.html' %}{% endfor %}</div>{% else %}<div class="empty-state"><span class="empty-symbol" aria-hidden="true">＋</span><p>{% if active_status == 'draft' %}Нет объявлений на рассмотрении.{% elif active_status == 'published' %}Пока ничего не опубликовано.{% elif active_status == 'archived' %}Нет снятых с публикации объявлений.{% else %}Пока нет объявлений. Новая карточка сначала будет на рассмотрении.{% endif %}</p><a class="button" href="{% url 'web:ad-create' %}">Разместить объявление</a></div>{% endif %}{% include 'includes/pagination.html' %}{% endblock %}

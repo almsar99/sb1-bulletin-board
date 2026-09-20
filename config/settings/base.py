@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "users.apps.UsersConfig",
     "ads.apps.AdsConfig",
+    "web.apps.WebConfig",
+    "messaging.apps.MessagingConfig",
 ]
 
 MIDDLEWARE = [
@@ -74,6 +76,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+CSRF_FAILURE_VIEW = "web.views.errors.csrf_failure"
 
 TEMPLATES = [
     {
@@ -83,6 +86,10 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "web.context_processors.categories",
+                "web.context_processors.site_metadata",
+                "web.context_processors.review_queue",
+                "messaging.context_processors.unread_messages",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -112,6 +119,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -178,6 +190,7 @@ __all__ = [
     "CORS_ALLOWED_ORIGINS",
     "CORS_ALLOW_CREDENTIALS",
     "CSRF_COOKIE_HTTPONLY",
+    "CSRF_FAILURE_VIEW",
     "DATABASES",
     "DEBUG",
     "DEFAULT_AUTO_FIELD",
@@ -201,6 +214,10 @@ __all__ = [
     "DEFAULT_FROM_EMAIL",
     "SPECTACULAR_SETTINGS",
     "STATIC_ROOT",
+    "STATICFILES_DIRS",
+    "LOGIN_URL",
+    "LOGIN_REDIRECT_URL",
+    "LOGOUT_REDIRECT_URL",
     "STATIC_URL",
     "STORAGES",
     "TEMPLATES",

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Переписка — маркет.код{% endblock %}
+{% block content %}
+<section class="conversation"><a class="back-link" href="{% url 'messaging:list' %}">← Сообщения</a>
+<h1><a href="{% url 'web:ad-detail' thread.ad_id %}">{{ thread.ad.title }}</a></h1><p class="muted">Собеседник: {{ other.first_name|default:'Пользователь' }}</p>
+<ol class="message-feed">{% for item in items %}<li class="private-message{% if item.author_id == request.user.pk %} own-message{% endif %}"><p class="message-author">{% if item.author_id == request.user.pk %}Вы{% else %}{{ other.first_name|default:'Пользователь' }}{% endif %}</p><div>{{ item.text|linebreaksbr }}</div><time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:'d.m.Y H:i' }}</time></li>{% endfor %}</ol>
+{% include 'includes/pagination.html' %}
+<form class="private-message-form" method="post">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">Отправить</button></form>
+</section>
+{% endblock %}

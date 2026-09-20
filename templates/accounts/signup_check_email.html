@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Проверьте почту — маркет.код{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    <p class="eyebrow">Почти готово</p>
+
+    <h1>Проверьте почту</h1>
+
+    <p class="page-intro">
+        Мы отправили письмо со ссылкой для подтверждения адреса электронной почты.
+    </p>
+
+    {% if verification_email %}
+        <p>
+            Письмо отправлено на <strong>{{ verification_email }}</strong>.
+        </p>
+    {% endif %}
+
+    <p>
+        Перейдите по ссылке из письма в течение суток. Аккаунт будет создан после
+        подтверждения почты. Затем вы сможете войти с указанным паролем.
+    </p>
+
+    {% if verification_email %}
+        {% url 'web:resend-verification' as resend_url %}
+        {% include 'includes/email_resend.html' %}
+    {% else %}
+        <a class="button button-full" href="{% url 'web:signup' %}">Вернуться к регистрации</a>
+    {% endif %}
+
+    <p class="auth-bottom">
+        Уже подтвердили почту?
+        <a href="{% url 'web:login' %}">Войти</a>
+    </p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'js/email-cooldown.js' %}" defer></script>{% endblock %}

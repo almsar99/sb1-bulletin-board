@@ -1,0 +1,11 @@
+<form class="email-resend" method="post" action="{{ resend_url }}" data-email-form data-email-retry-after="{{ email_retry_after|default:0 }}">
+    {% csrf_token %}
+    <p class="email-resend-note muted">Письмо не пришло? Проверьте папку «Спам» или запросите его повторно.</p>
+    <button class="button button-full" type="submit" aria-describedby="email-resend-countdown"{% if email_retry_after > 0 %} disabled{% endif %}>Запросить повторно</button>
+    <p class="email-resend-note muted" id="email-resend-countdown" data-email-countdown role="timer" aria-live="off"{% if not email_retry_after %} hidden{% endif %}>
+        Повторная отправка через <span data-email-seconds>{{ email_retry_after|default:0 }}</span> с.
+    </p>
+    <noscript>
+        <p class="email-resend-note muted">Повторная отправка доступна через минуту после отправки письма. <a href="{{ request.path }}">Обновите страницу</a>, чтобы проверить доступность кнопки.</p>
+    </noscript>
+</form>

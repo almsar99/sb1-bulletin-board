@@ -1,0 +1,55 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B1220">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1220'/%3E%3Cpath d='m10 10-5 6 5 6m12-12 5 6-5 6M19 7l-6 18' fill='none' stroke='%2322D3EE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>{% block title %}маркет.код — доска объявлений{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Скрипты, фриланс, курсы, готовые решения и железо на {{ brand_name }}.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ brand_name }} — доска объявлений{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Скрипты, фриланс, курсы, готовые решения и железо на {{ brand_name }}.{% endblock %}">
+  <meta property="og:url" content="{{ page_url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="{{ brand_name }}">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="{{ page_url }}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script src="{% static 'js/navigation.js' %}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="{% url 'web:ad-list' %}" aria-label="маркет.код — главная"><span class="brand-mark">{% include "includes/brand_mark.html" %}</span>маркет<span class="brand-dot">.</span>код</a>
+      <form class="header-search" action="{% block search_action %}{% if category_label %}{% url 'web:category' active_category %}{% else %}{% url 'web:ad-list' %}{% endif %}{% endblock %}" method="get" role="search">
+        {% block search_filters %}{% endblock %}
+        <label class="visually-hidden" for="site-search">Поиск по названию</label>
+        <input type="search" id="site-search" name="search" value="{{ request.GET.search }}" placeholder="Что вы ищете?">
+        <button type="submit" aria-label="Найти объявления"><span class="search-symbol" aria-hidden="true"></span></button>
+      </form>
+      <button class="menu-toggle" type="button" aria-controls="site-menu" aria-expanded="false">Меню <span aria-hidden="true">☰</span></button>
+      <nav class="header-nav" id="site-menu" aria-label="Основная навигация">
+        {% if request.user.is_authenticated %}
+          <a class="nav-link" href="{% url 'web:account' %}">Мой кабинет</a>
+          <a class="nav-link" href="{% url 'messaging:list' %}">Сообщения{% if unread_message_count %} <span class="count-badge">{{ unread_message_count }}</span>{% endif %}</a>
+          {% if request.user.is_admin %}<a class="nav-link" href="{% url 'web:review-queue' %}">На рассмотрении <span class="count-badge">{{ review_queue_count }}</span></a>{% endif %}
+          <form action="{% url 'web:logout' %}" method="post">{% csrf_token %}<button class="nav-link" type="submit">Выйти</button></form>
+        {% else %}
+          <a class="nav-link" href="{% url 'web:login' %}">Войти</a>
+          <a class="nav-link" href="{% url 'web:signup' %}">Регистрация</a>
+        {% endif %}
+        <a class="button button-small" href="{% if request.user.is_authenticated %}{% url 'web:ad-create' %}{% else %}{% url 'web:login' %}?next={% url 'web:ad-create' %}{% endif %}">Подать объявление</a>
+      </nav>
+    </div>
+  </header>
+  {% block category_navigation %}{% include "includes/categories.html" %}{% endblock %}
+  <main id="main" class="container main-content">
+    {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer"><div class="container footer-inner"><div><a class="brand brand-footer" href="{% url 'web:ad-list' %}">маркет<span class="brand-dot">.</span>код</a><p>market-kod.ru · Вход по адресу почты</p></div><div class="footer-links"><a href="{% url 'web:ad-list' %}">Все объявления</a><a href="{% url 'web:about' %}">О проекте</a><a href="{% url 'swagger-ui' %}">API</a><span>© {% now 'Y' %} маркет.код</span></div></div></footer>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Вход — маркет.код{% endblock %}
+{% block content %}<section class="auth-card"><p class="eyebrow">Рады видеть вас снова</p><h1>С возвращением</h1><p class="page-intro">Войдите, чтобы размещать объявления и оставлять отзывы.</p><form method="post">{% csrf_token %}{% include 'includes/form_fields.html' %}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<div class="auth-options"><a href="{% url 'web:password-reset' %}">Забыли пароль?</a></div><button class="button button-full" type="submit">Войти</button></form><p class="auth-bottom">Пока нет аккаунта? <a href="{% url 'web:signup' %}">Зарегистрироваться</a></p></section>{% endblock %}

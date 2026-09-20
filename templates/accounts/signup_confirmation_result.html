@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Подтверждение почты — маркет.код{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    {% if verified %}
+        <p class="eyebrow">Готово</p>
+        <h1>Почта подтверждена</h1>
+        <p class="page-intro">
+            Адрес электронной почты подтверждён, аккаунт создан. Теперь вы можете войти.
+        </p>
+        <a class="button button-full" href="{% url 'web:login' %}">Войти</a>
+    {% else %}
+        <p class="eyebrow">Не удалось подтвердить почту</p>
+        <h1>Ссылка недействительна или истекла</h1>
+        <p class="page-intro">
+            Если срок ссылки истёк, заполните форму регистрации ещё раз.
+        </p>
+        <a class="button button-full" href="{% url 'web:signup' %}">Перейти к регистрации</a>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}На рассмотрении — маркет.код{% endblock %}
+{% block content %}
+<div class="section-heading"><h1>На рассмотрении <span class="count-badge">{{ page_obj.paginator.count }}</span></h1></div>
+<p class="page-intro">Объявления всех авторов. Новые отправки показаны первыми.</p>
+{% if ads %}
+<div class="review-queue">
+  {% for ad in ads %}
+  <article class="review-row">
+    <div class="review-thumbnail" aria-hidden="true">
+      {% if ad.image %}<img src="{{ ad.image.url }}" alt="" width="72" height="72" loading="lazy">{% else %}{% include 'includes/category_icon.html' with icon=ad.category %}{% endif %}
+    </div>
+    <h2 class="review-title"><a href="{% url 'web:ad-detail' ad.pk %}">{{ ad.title }}</a></h2>
+    <p class="review-meta"><span>{{ ad.author.first_name|default:ad.author.email }}</span><span>{{ ad.get_category_display }}</span></p>
+    <time class="review-date" datetime="{{ ad.submitted_at|date:'c' }}">Отправлено {{ ad.submitted_at|date:'d.m.Y' }}</time>
+    <p class="review-price">{% if ad.price %}{{ ad.price|floatformat:'0g' }} ₽{% else %}Бесплатно{% endif %}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}<p>Нет объявлений на рассмотрении.</p>{% endif %}
+{% include 'includes/pagination.html' %}
+{% endblock %}

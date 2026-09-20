@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Сообщения — маркет.код{% endblock %}
+{% block content %}
+<section class="inbox"><h1>Сообщения</h1>
+{% for row in rows %}<article class="thread-row{% if row.thread.has_unread %} thread-unread{% endif %}">
+<div><h2><a href="{% url 'web:ad-detail' row.thread.ad_id %}">{{ row.thread.ad.title }}</a></h2><p class="muted">{{ row.other.first_name|default:'Пользователь' }}</p><p class="thread-preview">{{ row.thread.latest_text|default:'Открыть переписку'|truncatechars:100 }}</p></div>
+<div class="thread-meta"><time datetime="{{ row.thread.updated_at|date:'c' }}">{{ row.thread.updated_at|date:'d.m.Y H:i' }}</time>{% if row.thread.has_unread %}<p class="unread-marker">Непрочитанное</p>{% endif %}<a href="{% url 'messaging:detail' row.thread.pk %}">Открыть диалог →</a></div>
+</article>{% empty %}<p>Пока нет переписок. Напишите автору объявления, чтобы начать разговор.</p>{% endfor %}
+{% include 'includes/pagination.html' %}
+</section>
+{% endblock %}
