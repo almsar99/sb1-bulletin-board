@@ -1,15 +1,53 @@
 # маркет.код
 
+[![CI](https://github.com/almsar99/sb1-bulletin-board/actions/workflows/ci.yml/badge.svg)](https://github.com/almsar99/sb1-bulletin-board/actions/workflows/ci.yml)
+
 Дипломный проект — SB1 — Доска объявлений
+
+[Сайт market-kod.ru](https://market-kod.ru/) · [Swagger](https://market-kod.ru/api/docs/)
 
 ## Стек
 
 Python 3.14, Django 6, DRF, PostgreSQL 16, Simple JWT, django-filter,
-drf-spectacular, Pillow, WhiteNoise.
+drf-spectacular, Pillow, psycopg, WhiteNoise и Gunicorn.
 Версии зависимостей закреплены в `requirements/`.
 Тесты и стиль: pytest, Black, isort, Flake8.
 
-## Установка
+## Запуск в Docker
+
+Нужны Docker и Compose с поддержкой `up --wait`.
+
+```bash
+cp .env.example .env
+chmod 600 .env
+python3 -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Запишите полученный ключ в `DJANGO_SECRET_KEY`, а отдельный пароль базы —
+в `POSTGRES_PASSWORD`. Для разработки оставьте
+`DJANGO_SETTINGS_MODULE=config.settings.local`.
+
+```bash
+docker compose up --build --wait
+docker compose exec web python manage.py seed_demo
+```
+
+| Что открыть | Адрес |
+| --- | --- |
+| Сайт | http://127.0.0.1:8000/ |
+| Swagger | http://127.0.0.1:8000/api/docs/ |
+| Админка | http://127.0.0.1:8000/admin/ |
+| Проверка приложения и базы | `GET /health/` |
+
+При старте контейнер применяет миграции, создаёт таблицу общего кэша и собирает
+статику. Порт доступен только на `127.0.0.1`; другой можно задать через `WEB_PORT`
+в `.env`. Фотографии хранятся в томе `media_data`. `docker compose down` сохраняет
+тома, а `down -v` удаляет базу и фотографии.
+
+Настройка сервера, HTTPS, обновление и резервные копии описаны
+в [DEPLOY](docs/DEPLOY.md).
+
+## Запуск без Docker
 
 Нужны Python 3.14 и PostgreSQL 16.
 
@@ -158,16 +196,15 @@ Swagger: http://127.0.0.1:8000/api/docs/
 | Почта | сервер, логин, пароль, отправитель |
 | Кэш | общее хранилище счётчиков, необязательно |
 
-Ограничения частоты, всё за минуту:
+Ограничения частоты:
 
 | Что | С адреса | С учётной записи |
 | --- | --- | --- |
-| вход | 20 | 10 |
-| регистрация | 20 | — |
-| запрос восстановления | 20 | — |
-| подтверждение по ссылке | 30 | — |
+| вход | 20 в минуту | 10 в минуту |
+| регистрация | 20 в минуту | письмо раз в 60 с |
+| запрос восстановления | 20 в минуту | письмо раз в 60 с |
+| подтверждение по ссылке | 30 в минуту | — |
 
-Письмо учётной записи уходит не чаще одного раза в минуту.
 Сообщения — десять в минуту, новый диалог — один в тридцать секунд.
 
 Счётчики живут в кэше приложения. Без переменной `DJANGO_CACHE_URL` это память
@@ -190,6 +227,24 @@ python manage.py cleanup_media
 без подтверждающего ключа она ничего не удаляет, а только перечисляет кандидатов
 и пропускает файлы моложе суток.
 
+## Демонстрационные данные
+
+В Docker: `docker compose exec web python manage.py seed_demo`.
+Локально: `make seed`. Команда создаёт три учётные записи, двадцать объявлений,
+отзывы, вопросы, ответы и три диалога. Вместо фотографий показаны значки рубрик.
+
+Пароли по умолчанию доступны только в режиме разработки:
+
+| Адрес | Пароль |
+| --- | --- |
+| `demo-admin@market-kod.ru` | `Demo-admin-2026!` |
+| `demo-anna@market-kod.ru` | `Demo-user1-2026!` |
+| `demo-max@market-kod.ru` | `Demo-user2-2026!` |
+
+На сервере передайте свои пароли через `--admin-password`, `--user1-password`,
+`--user2-password`. Повторный запуск не создаёт дубликатов.
+`seed_demo --flush` или `make seed-flush` удаляет только демоданные.
+
 ## Проверки
 
 ```bash
@@ -197,3 +252,9 @@ make lint
 make test
 make cov
 ```
+
+GitHub Actions при каждом изменении прогоняет линтеры, тесты с порогом покрытия,
+собирает образ, поднимает контейнеры и проверяет сохранность данных
+после перезапуска.
+
+[Архитектура и права доступа](docs/ARCHITECTURE.md) · [Развёртывание и обслуживание](docs/DEPLOY.md)

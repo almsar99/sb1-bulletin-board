@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop, 'feature/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bulletin_board
+          POSTGRES_USER: bulletin_board
+          POSTGRES_PASSWORD: test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bulletin_board -d bulletin_board"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DJANGO_SECRET_KEY: ci-only-secret-key-which-is-longer-than-fifty-characters-2026
+      POSTGRES_DB: bulletin_board
+      POSTGRES_USER: bulletin_board
+      POSTGRES_PASSWORD: test-password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: 'requirements/*.txt'
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Check configuration and migrations
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+      - name: Check code style
+        run: |
+          flake8 config users ads web messaging tests
+          black --check config users ads web messaging tests
+          isort --check-only config users ads web messaging tests
+      - name: Validate API schema
+        run: python manage.py spectacular --validate --fail-on-warn --file /tmp/schema.yaml
+      - name: Run tests with coverage
+        run: pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=75
+
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Prepare container environment
+        run: |
+          cp .env.example .env
+          python - <<'PY'
+          from pathlib import Path
+          import secrets
+          with Path('.env').open('a') as env:
+              env.write('\nDJANGO_SECRET_KEY=' + secrets.token_urlsafe(48))
+              env.write('\nPOSTGRES_PASSWORD=' + secrets.token_urlsafe(24) + '\n')
+          PY
+      - name: Build and start
+        run: docker compose -p bulletin-board-ci up --build --wait --wait-timeout 180
+      - name: Check API and media
+        run: |
+          umask 077
+          python tests/container_smoke.py register http://127.0.0.1:8000 /tmp/smoke-state.json
+          docker compose -p bulletin-board-ci logs --no-log-prefix --no-color web > /tmp/smoke-mail.log
+          python tests/container_smoke.py create http://127.0.0.1:8000 /tmp/smoke-state.json --mail-log /tmp/smoke-mail.log
+          rm -f /tmp/smoke-mail.log
+      - name: Check persistence after restart
+        run: |
+          docker compose -p bulletin-board-ci restart
+          docker compose -p bulletin-board-ci up --wait --wait-timeout 120
+          python tests/container_smoke.py verify http://127.0.0.1:8000 /tmp/smoke-state.json
+      - name: Check persistence after recreation
+        run: |
+          docker compose -p bulletin-board-ci down
+          docker compose -p bulletin-board-ci up --wait --wait-timeout 120
+          python tests/container_smoke.py verify http://127.0.0.1:8000 /tmp/smoke-state.json
+      - name: Check production restrictions
+        run: |
+          cat >> .env <<'ENV'
+          DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+          DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost
+          FRONTEND_URL=https://localhost
+          DJANGO_EMAIL_BACKEND=smtp
+          DJANGO_EMAIL_HOST=smtp.example.com
+          DJANGO_EMAIL_HOST_USER=test
+          DJANGO_EMAIL_HOST_PASSWORD=unused-test-password
+          ENV
+          docker compose -p bulletin-board-ci -f docker-compose.yml -f docker-compose.prod.yml up --wait --wait-timeout 120
+          docker compose -p bulletin-board-ci exec -T web python manage.py check --deploy --fail-level WARNING
+          test "$(docker compose -p bulletin-board-ci exec -T web id -u)" = 10001
+          curl --fail --silent -H 'X-Forwarded-Proto: https' http://127.0.0.1:8000/api/docs/ > /dev/null
+          curl --fail --silent -H 'X-Forwarded-Proto: https' http://127.0.0.1:8000/ > /dev/null
+          curl --fail --silent -H 'X-Forwarded-Proto: https' http://127.0.0.1:8000/static/css/site.css > /dev/null
+      - name: Container diagnostics on failure
+        if: failure()
+        # Raw web logs include console email links; keep them out of the CI output.
+        run: |
+          docker compose -p bulletin-board-ci ps -a
+          docker compose -p bulletin-board-ci logs --tail 100 db
+      - name: Stop containers
+        if: always()
+        run: |
+          rm -f /tmp/smoke-mail.log /tmp/smoke-state.json
+          docker compose -p bulletin-board-ci down
