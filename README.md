@@ -4,12 +4,13 @@
 
 ## Стек
 
-Python 3.14. Версии зависимостей закреплены в `requirements/`.
+Python 3.14, Django 6, DRF, PostgreSQL 16, Simple JWT, drf-spectacular.
+Версии зависимостей закреплены в `requirements/`.
 Тесты и стиль: pytest, Black, isort, Flake8.
 
 ## Установка
 
-Нужен Python 3.14.
+Нужны Python 3.14 и PostgreSQL 16.
 
 ```bash
 python3.14 -m venv .venv
@@ -28,6 +29,54 @@ chmod 600 .env
 python3 -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
+## База
+
+Пример создания локальной базы:
+
+```sql
+CREATE ROLE bulletin_board WITH LOGIN CREATEDB PASSWORD 'dev';
+CREATE DATABASE bulletin_board OWNER bulletin_board;
+```
+
+Право `CREATEDB` нужно тестам: Django создаёт и удаляет `test_bulletin_board`.
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver 127.0.0.1:8000
+```
+
+Swagger: http://127.0.0.1:8000/api/docs/
+
+## Учётные записи
+
+| Метод | Назначение |
+| --- | --- |
+| `POST /api/users/register/` | заявка на регистрацию, письмо со ссылкой |
+| `GET /signup/confirm/<token>/` | подтверждение, создание записи |
+| `POST /api/users/signup/resend/` | повторное письмо |
+| `POST /api/users/token/` | вход, выдача access и refresh |
+| `POST /api/users/token/refresh/` | обновление access |
+| `POST /api/users/token/verify/` | проверка токена |
+| `GET`, `PATCH /api/users/me/` | профиль, фото через multipart |
+| `POST /api/users/set_password/` | смена пароля |
+| `POST /api/users/reset_password/` | письмо восстановления |
+| `POST /api/users/reset_password_confirm/` | новый пароль по ссылке |
+
+Два последних метода доступны и без префикса: `/users/reset_password/`
+и `/users/reset_password_confirm/`. Короткие адреса скрыты из схемы.
+
+Учётная запись создаётся только после перехода по ссылке из письма: до этого
+данные формы хранятся заявкой. Ссылка одноразовая и действует сутки. Ответ
+на запрос восстановления одинаков независимо от того, существует ли адрес,
+и не меняется при отказе почтового сервера.
+
+После смены или восстановления пароля прежние access и refresh перестают
+действовать: у записи хранится время последней смены, и токен, выпущенный
+раньше, отклоняется.
+
+Локально письма печатаются в консоль, в тестах — в память.
+
 ## Настройки
 
 Полный список переменных — в `.env.example`.
@@ -40,10 +89,10 @@ python3 -c "import secrets; print(secrets.token_urlsafe(48))"
 | JWT | срок access и refresh |
 | Почта | сервер, логин, пароль, отправитель |
 
-Значения понадобятся на следующих шагах, когда появится приложение.
-
 ## Проверки
 
 ```bash
 make lint
+make test
+make cov
 ```
