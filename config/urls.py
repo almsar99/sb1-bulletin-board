@@ -1,6 +1,7 @@
 """Адреса сайта и API.
 
-Короткие адреса сброса пароля скрыты из Swagger, чтобы не дублировать методы.
+Короткие адреса сброса пароля и списка объявлений скрыты из Swagger,
+чтобы не дублировать методы.
 """
 
 from django.conf import settings
@@ -9,11 +10,16 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView
 
+from ads.views import AdListAliasViewSet, CategoryListView, DiscussionListView
 from config.views import APIDocumentationView, health
 from users.views import PasswordResetConfirmAliasView, PasswordResetRequestAliasView
 
 urlpatterns = [
     path("health/", health, name="health"),
+    path("api/discussions/", DiscussionListView.as_view(), name="discussion-list"),
+    path("api/categories/", CategoryListView.as_view(), name="category-list"),
+    path("api/ads/", include("ads.urls")),
+    path("ads/", AdListAliasViewSet.as_view({"get": "list"})),
     path("users/reset_password/", PasswordResetRequestAliasView.as_view()),
     path("users/reset_password_confirm", PasswordResetConfirmAliasView.as_view()),
     path("users/reset_password_confirm/", PasswordResetConfirmAliasView.as_view()),

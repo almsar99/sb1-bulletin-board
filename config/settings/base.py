@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
     "users.apps.UsersConfig",
+    "ads.apps.AdsConfig",
 ]
 
 MIDDLEWARE = [
